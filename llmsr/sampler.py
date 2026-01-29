@@ -260,7 +260,7 @@ class LocalLLM(LLM):
 
         # Ollama API JSON
         data = {
-            "model": "mistral",  # must match 'ollama pull mistral'
+            "model": "llama3.8b",  # must match 'ollama pull mistral'
             "prompt": content,
             "stream": False
         }
