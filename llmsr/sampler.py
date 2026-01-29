@@ -170,7 +170,7 @@ class LocalLLM(LLM):
         """
         super().__init__(samples_per_prompt)
 
-        url = "http://127.0.0.1:5000/completions"
+        url = "http://127.0.0.1:8000/completions"
         instruction_prompt = ("You are a helpful assistant tasked with discovering mathematical function structures for scientific systems. \
                              Complete the 'equation' function below, considering the physical meaning and relationships of inputs.\n\n")
         self._batch_inference = batch_inference
