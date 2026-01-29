@@ -250,31 +250,33 @@ class LocalLLM(LLM):
                     continue
         
         return all_samples
-    
-    
+
     def _do_request(self, content: str) -> str:
+        """
+        Send the prompt to Ollama local API and return the response(s)
+        """
         content = content.strip('\n').strip()
-        # repeat the prompt for batch inference
-        repeat_prompt: int = self._samples_per_prompt if self._batch_inference else 1
-        
+        repeat_prompt = self._samples_per_prompt if self._batch_inference else 1
+
+        # Ollama API JSON
         data = {
-            'prompt': content,
-            'repeat_prompt': repeat_prompt,
-            'params': {
-                'do_sample': True,
-                'temperature': None,
-                'top_k': None,
-                'top_p': None,
-                'add_special_tokens': False,
-                'skip_special_tokens': True,
-            }
+            "model": "mistral",  # must match 'ollama pull mistral'
+            "prompt": content,
+            "stream": False
         }
-        
+
         headers = {'Content-Type': 'application/json'}
-        response = requests.post(self._url, data=json.dumps(data), headers=headers)
-        
-        if response.status_code == 200: #Server status code 200 indicates successful HTTP request! 
-            response = response.json()["content"]
-            
-            return response if self._batch_inference else response[0]
+        response = requests.post("http://localhost:11434/api/generate",
+                                 json=data, headers=headers, timeout=300)
+
+        response.raise_for_status()  # fail loudly if HTTP error
+
+        result = response.json()
+        # Ollama returns one string in "response" field for normal inference
+        text = result["response"]
+
+        if self._batch_inference:
+            return [text] * self._samples_per_prompt
+        else:
+            return text
 
